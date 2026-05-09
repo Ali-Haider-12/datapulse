@@ -66,7 +66,9 @@ class SessionManager:
     """
 
     def __init__(self, storage_path: str = None, max_history: int = 100):
-        self.storage_path = Path(storage_path) if storage_path else Path("./sessions")
+        self.storage_path = Path(storage_path) if storage_path else Path(
+            os.environ.get("SESSIONS_DIR", "/tmp/datapulse_sessions")
+        )
         self.max_history = max_history
         self.sessions: Dict[str, Session] = {}
         self._cleanup_task = None
@@ -77,6 +79,9 @@ class SessionManager:
         self._load_sessions()
         self._cleanup_task = asyncio.create_task(self._periodic_cleanup())
         logger.info(f"SessionManager started — loaded {len(self.sessions)} sessions")
+
+    def _ensure_storage_dir(self) -> None:
+        self.storage_path.mkdir(parents=True, exist_ok=True)
 
     async def stop(self) -> None:
         """Stop the session manager — save all sessions."""

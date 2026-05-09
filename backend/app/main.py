@@ -5,6 +5,7 @@ DataPulse API Entry Point — FastAPI application with all routes and services.
 from contextlib import asynccontextmanager
 import asyncio
 import logging
+import os
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
@@ -51,14 +52,14 @@ async def lifespan(app: FastAPI):
 
     # Session Manager
     session_manager = SessionManager(
-        storage_path="/opt/data/datapulse/backend/app/sessions",
+        storage_path=os.environ.get("SESSIONS_DIR", "/tmp/datapulse_sessions"),
         max_history=50,
     )
     await session_manager.start()
     logger.info("✓ Session Manager started")
 
     # State Manager
-    state_manager = StateManager(state_dir="/opt/data/datapulse/backend/app/state")
+    state_manager = StateManager(state_dir=os.environ.get("STATE_DIR", "/tmp/datapulse_state"))
     await state_manager.start()
     logger.info("✓ State Manager started")
 

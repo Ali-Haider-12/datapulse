@@ -34,8 +34,8 @@ class StateManager:
     - Atomic writes (write to temp, then rename)
     """
 
-    def __init__(self, state_dir: str = "./state"):
-        self.state_dir = Path(state_dir)
+    def __init__(self, state_dir: str = None):
+        self.state_dir = Path(state_dir or os.environ.get("STATE_DIR", "/tmp/datapulse_state"))
         self._state_file = self.state_dir / "datapulse_state.json"
         self._backup_dir = self.state_dir / "backups"
         self._lock = asyncio.Lock()
