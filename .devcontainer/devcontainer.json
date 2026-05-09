@@ -2,21 +2,21 @@
   "name": "DataPulse Dev Environment",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
   "features": {
-    "ghcr.io/devcontainers/features/python:1": {"version": "3.11"},
-    "ghcr.io/devcontainers/features/node:1": {"version": "20"},
-    "ghcr.io/devcontainers/features/sshd:1": {"version": "latest"}
+    "ghcr.io/devcontainers/features/python:1": { "version": "3.12" },
+    "ghcr.io/devcontainers/features/node:1": { "version": "20" },
+    "ghcr.io/devcontainers/features/sshd:1": { "version": "latest" }
   },
   "forwardPorts": [3000, 8001, 9201],
   "portsAttributes": {
-    "3000": {"label": "Frontend", "onAutoForward": "openBrowser", "visibility": "public"},
-    "8001": {"label": "Backend API", "onAutoForward": "notify", "visibility": "public"},
-    "9201": {"label": "Mock Elasticsearch", "onAutoForward": "notify", "visibility": "private"}
+    "3000": { "label": "Frontend", "onAutoForward": "openBrowser", "visibility": "public" },
+    "8001": { "label": "Backend API", "onAutoForward": "notify", "visibility": "public" },
+    "9201": { "label": "Mock Elasticsearch", "onAutoForward": "notify", "visibility": "private" }
   },
-  "postCreateCommand": "cd /workspaces/datapulse/backend && python3 -m venv .venv && . .venv/bin/activate && pip install -q -r requirements.txt && cd /workspaces/datapulse/frontend && npm install",
-  "postStartCommand": "cd /workspaces/datapulse/backend && . .venv/bin/activate && (python scripts/mock_es_server.py --port 9201 &) && sleep 2 && (ES_URL=http://localhost:9201 uvicorn app.main:app --host 0.0.0.0 --port 8001 &) && sleep 2 && cd /workspaces/datapulse/frontend && (npm run dev -- --hostname 0.0.0.0 --port 3000 &)",
+  "postCreateCommand": "cd /workspaces/datapulse/backend && python3 -m venv .venv && . .venv/bin/activate && pip install --upgrade pip -q && pip install -q -r requirements.txt && cd /workspaces/datapulse/frontend && npm install 2>&1 | tail -3",
+  "postStartCommand": "cd /workspaces/datapulse/backend && . .venv/bin/activate && python scripts/mock_es_server.py --port 9201 &> /tmp/es.log & && sleep 3 && ES_URL=http://localhost:9201 uvicorn app.main:app --host 0.0.0.0 --port 8001 &> /tmp/api.log & && sleep 2 && cd /workspaces/datapulse/frontend && npm run dev -- --hostname 0.0.0.0 --port 3000 &> /tmp/frontend.log &",
   "customizations": {
     "vscode": {
-      "extensions": ["ms-python.python", "dbaeumer.vscode-eslint"]
+      "extensions": ["ms-python.python", "dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]
     }
   }
 }

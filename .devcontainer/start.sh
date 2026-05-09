@@ -1,37 +1,28 @@
 #!/bin/bash
-# DataPulse Codespaces Startup Script
 set -e
+cd /workspaces/datapulse
 
-echo "🚀 Starting DataPulse in Codespaces..."
+echo "=== Starting DataPulse Services ==="
 
-# Start mock Elasticsearch
-cd /workspaces/datapulse/backend
+# Start mock ES
+python3 backend/scripts/mock_es_server.py --port 9201 &
+echo "Mock ES starting on :9201"
+
+sleep 3
+
+# Start backend API
+cd backend
 source .venv/bin/activate
-python scripts/mock_es_server.py --port 9201 &
-ES_PID=$!
-echo "✅ Mock ES started on port 9201 (PID: $ES_PID)"
+export ES_URL=http://localhost:9201
+uvicorn app.main:app --host 0.0.0.0 --port 8001 &
+echo "Backend API starting on :8001"
 
-# Start backend
-ES_URL=http://localhost:9201 MCP_SERVER_URL=http://localhost:8080/mcp uvicorn app.main:app --host 0.0.0.0 --port 8001 &
-BE_PID=$!
-echo "✅ Backend API started on port 8001 (PID: $BE_PID)"
+sleep 2
 
 # Start frontend
-cd /workspaces/datapulse/frontend
-npm run dev -- --host 0.0.0.0 --port 3000 &
-FE_PID=$!
-echo "✅ Frontend started on port 3000 (PID: $FE_PID)"
+cd ../frontend
+npm run dev -- --hostname 0.0.0.0 --port 3000 &
+echo "Frontend starting on :3000"
 
-echo ""
-echo "═══════════════════════════════════════"
-echo "  🎉 DataPulse is running!"
-echo "═══════════════════════════════════════"
-echo "  Frontend:  https://$CODESPACE_NAME-3000.app.github.dev"
-echo "  Backend:   https://$CODESPACE_NAME-8001.app.github.dev"
-echo "  Mock ES:   https://$CODESPACE_NAME-9201.app.github.dev"
-echo ""
-echo "  Connect to ES: http://localhost:9201"
-echo "═══════════════════════════════════════"
-
-# Keep script alive
+echo "=== All services started ==="
 wait
