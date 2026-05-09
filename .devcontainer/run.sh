@@ -1,59 +1,35 @@
 #!/bin/bash
-set -e
+set -eo pipefail
+exec > >(tee /tmp/boot.log) 2>&1
+echo "=== Boot DataPulse $(date) ==="
+
 cd /workspaces/datapulse
-
-export PYTHONPATH=/workspaces/datapulse/backend:/workspaces/datapulse/backend/app
+source backend/.venv/bin/activate
 export ES_URL=http://localhost:9201
-
-LOG=/tmp/codespace-boot.log
-echo "=== Booting DataPulse at $(date) ===" > $LOG
+export PYTHONPATH=/workspaces/datapulse/backend:/workspaces/datapulse/backend/app
 
 # Start mock ES
-echo "Starting Mock ES..." >> $LOG
-nohup python3 backend/scripts/mock_es_server.py --port 9201 >> $LOG 2>&1 &
-echo "ES PID: $!" >> $LOG
-
+echo "Starting Mock ES..."
+python3 backend/scripts/mock_es_server.py --port 9201 &
 sleep 2
+echo "ES PID: $(pgrep -f mock_es_server)"
 
-# Verify ES
-if curl -s http://localhost:9201/ | grep -q "datapulse-demo"; then
-    echo "Mock ES: OK" >> $LOG
-else
-    echo "Mock ES: FAILED" >> $LOG
-fi
-
-# Start backend API
-echo "Starting Backend API..." >> $LOG
-nohup uvicorn app.main:app --host 0.0.0.0 --port 8001 >> $LOG 2>&1 &
-echo "API PID: $!" >> $LOG
-
+# Start API
+echo "Starting API..."
+cd /workspaces/datapulse/backend
+uvicorn app.main:app --host 0.0.0.0 --port 8001 &
 sleep 2
-
-# Verify API
-if curl -s http://localhost:8001/api/health | grep -q "OK\|status"; then
-    echo "Backend API: OK" >> $LOG
-else
-    echo "Backend API: FAILED" >> $LOG
-fi
+echo "API PID: $(pgrep -f uvicorn)"
 
 # Start frontend
-echo "Starting Frontend..." >> $LOG
-nohup npx next dev --hostname 0.0.0.0 --port 3000 >> $LOG 2>&1 &
-echo "FE PID: $!" >> $LOG
-
+echo "Starting Frontend..."
+cd /workspaces/datapulse/frontend
+npx next dev --hostname 0.0.0.0 --port 3000 &
 sleep 2
+echo "FE PID: $(pgrep -f next)"
 
-echo "=== Boot complete ===" >> $LOG
-echo "Frontend: http://localhost:3000" >> $LOG
-echo "API: http://localhost:8001" >> $LOG
-echo "ES: http://localhost:9201" >> $LOG
+echo "=== Boot done ==="
+cat /tmp/boot.log
 
-cat $LOG
-
-# Run tests and keep running
-echo "=== Running tests ===" >> $LOG
-cd /workspaces/datapulse/backend
-python3 -m pytest tests/ -v --ignore=tests/test_calendar_mcp.py --ignore=tests/test_gmail_mcp.py --ignore=tests/test_chat_webhook.py --tb=short 2>&1 | tail -15 >> $LOG
-
-# Keep container alive - tail the log forever
+# Keep alive - wait forever
 tail -f /dev/null
