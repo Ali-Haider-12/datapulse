@@ -1,55 +1,54 @@
 #!/bin/bash
-# DataPulse Codespaces Full Start — run after codespace wakes up
+# DataPulse Codespaces Full Start — v2.1.0
+set -e
+
 echo "🧹 Cleaning old processes..."
-pkill -f uvicorn 2>/dev/null
-pkill -f mock_es 2>/dev/null
-pkill -f "next dev" 2>/dev/null
+pkill -f uvicorn 2>/dev/null || true
+pkill -f mock_es 2>/dev/null || true
+pkill -f "next dev" 2>/dev/null || true
 sleep 2
 
-echo "🔴 Starting Mock Elasticsearch (port 9201)..."
-cd /workspaces/datapulse/backend
-source .venv/bin/activate
-python3 scripts/mock_es_server.py --port 9201 > /tmp/es.log 2>&1 &
-ES_PID=$!
-sleep 3
-if curl -s http://localhost:9201/_cluster/health > /dev/null 2>&1; then
-    echo "   ✅ Mock ES running (PID $ES_PID)"
-else
-    echo "   ❌ Mock ES failed — check /tmp/es.log"
-    cat /tmp/es.log | tail -5
+cd /workspaces/datapulse
+
+# Setup venv if needed
+if [ ! -d "backend/.venv" ]; then
+    echo "📦 Creating Python venv..."
+    python3 -m venv backend/.venv
 fi
+source backend/.venv/bin/activate
+pip install -q fastapi uvicorn httpx pydantic-settings pydantic pytest pytest-asyncio mcp google-genai 2>&1 | tail -3
 
 echo "⚙️ Starting Backend API (port 8001)..."
-export ES_URL=http://localhost:9201
+cd /workspaces/datapulse/backend
 uvicorn app.main:app --host 0.0.0.0 --port 8001 > /tmp/backend.log 2>&1 &
 BE_PID=$!
-sleep 6
+sleep 8
 if curl -s http://localhost:8001/ > /dev/null 2>&1; then
     echo "   ✅ Backend running (PID $BE_PID)"
 else
-    echo "   ❌ Backend failed — check /tmp/backend.log"
-    tail -10 /tmp/backend.log
+    echo "   ⚠️  Backend starting up - checking logs..."
+    tail -15 /tmp/backend.log
 fi
 
 echo "🎨 Starting Frontend (port 3000)..."
 cd /workspaces/datapulse/frontend
 npm run dev -- --hostname 0.0.0.0 --port 3000 > /tmp/frontend.log 2>&1 &
 FE_PID=$!
-sleep 8
-if curl -s -o /dev/null -w "%{http_code}" http://localhost:3000 | grep -q "200"; then
+sleep 10
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000 2>/dev/null || echo "000")
+if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "304" ]; then
     echo "   ✅ Frontend running (PID $FE_PID)"
 else
-    echo "   ⏳ Frontend still starting..."
+    echo "   ⏳ Frontend still building (HTTP $HTTP_CODE)..."
 fi
 
 echo ""
 echo "═══════════════════════════════════════════"
-echo "  🎉 DataPulse Services Started!"
+echo "  🎉 DataPulse v2.1.0 Services!"
 echo "═══════════════════════════════════════════"
-echo "  Mock ES:  http://localhost:9201"
 echo "  Backend:  http://localhost:8001"
 echo "  Frontend: http://localhost:3000"
+echo "  Logs:     tail -f /tmp/backend.log"
 echo "═══════════════════════════════════════════"
 
-# Keep script running so processes aren't orphaned
 wait
