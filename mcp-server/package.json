@@ -1,0 +1,14 @@
+{
+  "name": "datapulse-mcp-wrapper",
+  "version": "1.0.0",
+  "description": "Elastic MCP Server wrapper for DataPulse",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@elastic/mcp-server-elasticsearch": "^1.0.0",
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "express": "^4.21.0"
+  }
+}

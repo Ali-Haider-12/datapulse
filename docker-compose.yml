@@ -1,0 +1,75 @@
+version: "3.8"
+
+services:
+  # ─── Elasticsearch ───
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+  # ─── Elastic MCP Server ───
+  elastic-mcp:
+    image: node:20-alpine
+    working_dir: /app
+    command: sh -c "npm install && node index.js"
+    environment:
+      - ES_URL=http://elasticsearch:9200
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./mcp-server:/app
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+
+  # ─── Demo Data Seeder ───
+  seeder:
+    build:
+      context: ./backend
+    command: python scripts/seed_demo_data.py --es-url http://elasticsearch:9200
+    environment:
+      - ES_URL=http://elasticsearch:9200
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+
+  # ─── Backend (FastAPI) ───
+  backend:
+    build:
+      context: ./backend
+    environment:
+      - MCP_SERVER_URL=http://elastic-mcp:8080/mcp
+      - ES_URL=http://elasticsearch:9200
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - GOOGLE_CLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT:-}
+      - GOOGLE_CLOUD_LOCATION=${GOOGLE_CLOUD_LOCATION:-us-central1}
+    ports:
+      - "8000:8000"
+    depends_on:
+      - elastic-mcp
+
+  # ─── Frontend (Next.js) ───
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  es_data:
