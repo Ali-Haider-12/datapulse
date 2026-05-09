@@ -1,5 +1,5 @@
 {
-  "name": "DataPulse Dev",
+  "name": "DataPulse Dev Environment",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
   "features": {
     "ghcr.io/devcontainers/features/python:1": {
@@ -29,13 +29,13 @@
       "visibility": "public"
     },
     "9201": {
-      "label": "Mock ES",
-      "onAutoForward": "private",
+      "label": "Mock Elasticsearch",
+      "onAutoForward": "notify",
       "visibility": "private"
     }
   },
   "postCreateCommand": "cd /workspaces/datapulse/backend && python3 -m venv .venv && . .venv/bin/activate && pip install --upgrade pip -q && pip install -q -r requirements.txt && cd /workspaces/datapulse/frontend && npm install",
-  "postStartCommand": "chmod +x /workspaces/datapulse/.devcontainer/run.sh && exec bash /workspaces/datapulse/.devcontainer/run.sh",
+  "postStartCommand": "cd /workspaces/datapulse/backend && . .venv/bin/activate && echo '=== Starting Mock ES ===' && (python3 backend/scripts/mock_es_server.py --port 9201 &) && sleep 3 && echo '=== Starting Backend API ===' && (ES_URL=http://localhost:9201 uvicorn app.main:app --host 0.0.0.0 --port 8001 &) && sleep 3 && echo '=== Starting Frontend ===' && (cd /workspaces/datapulse/frontend && npm run dev -- --hostname 0.0.0.0 --port 3000 &) && echo '=== All services started ===' && tail -f /dev/null",
   "customizations": {
     "vscode": {
       "extensions": [
