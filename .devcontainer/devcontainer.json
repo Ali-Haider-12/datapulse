@@ -34,8 +34,8 @@
       "visibility": "private"
     }
   },
-  "postCreateCommand": "cd /workspaces/datapulse/backend && python3 -m venv .venv && .venv/bin/pip install --upgrade pip -q && .venv/bin/pip install -q -r requirements.txt 2>&1 | tail -3",
-  "postStartCommand": "bash /workspaces/datapulse/.devcontainer/start.sh",
+  "postCreateCommand": "cd /workspaces/datapulse/backend && python3 -m venv .venv && .venv/bin/pip install --upgrade pip -q 2>&1 | tail -1 && .venv/bin/pip install -q -r requirements.txt 2>&1 | tail -3",
+  "postStartCommand": "bash /workspaces/datapulse/.devcontainer/start.sh > /tmp/startup.log 2>&1",
   "customizations": {
     "vscode": {
       "extensions": [
