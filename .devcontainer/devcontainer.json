@@ -13,7 +13,7 @@
     "9201": { "label": "Mock Elasticsearch", "onAutoForward": "notify", "visibility": "private" }
   },
   "postCreateCommand": "cd /workspaces/datapulse/backend && python3 -m venv .venv && . .venv/bin/activate && pip install --upgrade pip -q && pip install -q -r requirements.txt && cd /workspaces/datapulse/frontend && npm install 2>&1 | tail -3",
-  "postStartCommand": "cd /workspaces/datapulse/backend && . .venv/bin/activate && python scripts/mock_es_server.py --port 9201 &> /tmp/es.log & && sleep 3 && ES_URL=http://localhost:9201 uvicorn app.main:app --host 0.0.0.0 --port 8001 &> /tmp/api.log & && sleep 2 && cd /workspaces/datapulse/frontend && npm run dev -- --hostname 0.0.0.0 --port 3000 &> /tmp/frontend.log &",
+  "postStartCommand": "cd /workspaces/datapulse && . devcontainer/start.sh",
   "customizations": {
     "vscode": {
       "extensions": ["ms-python.python", "dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]
