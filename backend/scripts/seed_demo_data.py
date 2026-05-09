@@ -9,7 +9,7 @@ import httpx
 import json
 import random
 import argparse
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 import asyncio
 
 SERVICES = [
@@ -101,7 +101,7 @@ async def create_indices(es_url: str):
 async def seed_logs(es_url: str):
     """Generate 10,000 log entries over the last 7 days with realistic patterns."""
     bulk_data = []
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     base_time = now - timedelta(days=7)
 
     for i in range(10000):
@@ -190,7 +190,7 @@ async def seed_products(es_url: str):
 async def seed_orders(es_url: str):
     """Seed order data with a recent ingestion drop (anomaly)."""
     bulk_data = []
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     base_time = now - timedelta(days=3)
     count = 0
 

@@ -13,7 +13,7 @@ Time saved: 30-60 min per recurring incident (skip investigation → instant fix
 """
 import logging
 from typing import Any, Dict, List, Optional, Tuple
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from collections import Counter
 
@@ -64,7 +64,7 @@ class PatternResult:
         self.proposed_actions: List[Dict] = []
         self.summary = ""
         self.time_saved_minutes = 0
-        self.analyzed_at = datetime.utcnow().isoformat()
+        self.analyzed_at = datetime.now(timezone.utc).isoformat()
 
     def to_dict(self):
         return {
@@ -175,7 +175,7 @@ class CrossIncidentEngine:
                 fix=pattern_def["fix"],
             )
             pattern.occurrence_count = total
-            pattern.last_seen = datetime.utcnow().isoformat()
+            pattern.last_seen = datetime.now(timezone.utc).isoformat()
 
             if total >= 10:
                 pattern.confidence = PatternConfidence.very_high

@@ -9,7 +9,7 @@ from app.services.cache import cached
 import asyncio
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 logger = logging.getLogger(__name__)
@@ -53,7 +53,7 @@ async def create_session(request: Request):
             "created_at": session.created_at.isoformat(),
             "message_count": 0,
         }
-    return {"session_id": "default", "created_at": datetime.utcnow().isoformat(), "message_count": 0}
+    return {"session_id": "default", "created_at": datetime.now(timezone.utc).isoformat(), "message_count": 0}
 
 
 @router.get("/session/{session_id}/history")
@@ -99,7 +99,7 @@ async def chat_query(request: Request):
 
     # Build prompt based on mode
     if mode == "chat":
-        prompt = f"[{datetime.utcnow().strftime('%Y-%m-%d %H:%M')}] User: {message}"
+        prompt = f"[{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M')}] User: {message}"
     elif mode == "analyze":
         prompt = f"Analyze this Elasticsearch situation: {message}. Provide structured JSON with root_cause, severity, and recommendation fields."
     elif mode == "remediate":
@@ -131,7 +131,7 @@ async def chat_query(request: Request):
         "response": response_text,
         "cached": False,
         "mode": mode,
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
 
@@ -158,7 +158,7 @@ async def websocket_chat(websocket: WebSocket):
             llm = await get_chat_llm(websocket.app)
 
             # Build prompt
-            prompt = f"[{datetime.utcnow().strftime('%H:%M')}] {message}"
+            prompt = f"[{datetime.now(timezone.utc).strftime('%H:%M')}] {message}"
 
             # Stream response back
             response_chunks = []

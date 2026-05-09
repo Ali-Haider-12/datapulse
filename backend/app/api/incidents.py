@@ -3,7 +3,7 @@ Incidents API — Manage security and infrastructure incidents.
 """
 
 from fastapi import APIRouter, HTTPException
-from datetime import datetime
+from datetime import datetime, timezone
 
 router = APIRouter()
 
@@ -44,7 +44,7 @@ async def create_incident(incident: dict):
     global _incounter
     _incounter += 1
 
-    now = datetime.utcnow().isoformat()
+    now = datetime.now(timezone.utc).isoformat()
     new_incident = {
         "id": f"INC-{_incounter:04d}",
         "title": incident.get("title", "Untitled Incident"),
@@ -92,7 +92,7 @@ async def update_incident(incident_id: str, updates: dict):
                 if key in updates:
                     inc[key] = updates[key]
 
-            inc["updated_at"] = datetime.utcnow().isoformat()
+            inc["updated_at"] = datetime.now(timezone.utc).isoformat()
             inc["timeline"].append({
                 "timestamp": inc["updated_at"],
                 "event": f"Updated: {', '.join(updates.keys())}",
@@ -152,7 +152,7 @@ async def add_remediation(incident_id: str, action: dict):
                 "status": action.get("status", "proposed"),
                 "assigned_to": action.get("assigned_to", ""),
                 "executed_at": action.get("executed_at"),
-                "created_at": datetime.utcnow().isoformat(),
+                "created_at": datetime.now(timezone.utc).isoformat(),
             }
             inc["remediation_actions"].append(remediation)
             return remediation

@@ -12,7 +12,7 @@ import httpx
 import json
 import uuid
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 from enum import Enum
 
@@ -59,7 +59,7 @@ class Incident:
         self.investigation_steps: List[Dict[str, Any]] = []
         self.diagnosis: Optional[Dict[str, Any]] = None
         self.remediation_actions: List[Dict[str, Any]] = []
-        self.created_at = datetime.utcnow().isoformat()
+        self.created_at = datetime.now(timezone.utc).isoformat()
         self.updated_at = self.created_at
 
     def add_investigation_step(self, tool: str, args: Dict, result_summary: str):
@@ -68,9 +68,9 @@ class Incident:
             "tool": tool,
             "args": args,
             "result_summary": result_summary,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         })
-        self.updated_at = datetime.utcnow().isoformat()
+        self.updated_at = datetime.now(timezone.utc).isoformat()
 
     def set_diagnosis(self, root_cause: str, impact: str, confidence: float, details: Dict = None):
         self.diagnosis = {
@@ -80,7 +80,7 @@ class Incident:
             "details": details or {},
         }
         self.status = IncidentStatus.DIAGNOSED
-        self.updated_at = datetime.utcnow().isoformat()
+        self.updated_at = datetime.now(timezone.utc).isoformat()
 
     def add_remediation_action(self, action_type: str, description: str, risk_level: str = "low", estimated_impact: str = "", **kwargs):
         action = {
@@ -95,7 +95,7 @@ class Incident:
         }
         self.remediation_actions.append(action)
         self.status = IncidentStatus.REMEDIATION_PROPOSED
-        self.updated_at = datetime.utcnow().isoformat()
+        self.updated_at = datetime.now(timezone.utc).isoformat()
         return action
 
     def to_dict(self) -> Dict[str, Any]:
@@ -203,7 +203,7 @@ class IncidentResponseEngine:
     async def investigate(self, incident: Incident) -> Incident:
         """Deep-dive investigation of an incident using multi-step tool calls."""
         incident.status = IncidentStatus.INVESTIGATING
-        incident.updated_at = datetime.utcnow().isoformat()
+        incident.updated_at = datetime.now(timezone.utc).isoformat()
 
         if incident.index_name:
             # Step 1: Get index details
@@ -408,7 +408,7 @@ class IncidentResponseEngine:
 
             action["status"] = "executed"
             incident.status = IncidentStatus.RESOLVED
-            incident.updated_at = datetime.utcnow().isoformat()
+            incident.updated_at = datetime.now(timezone.utc).isoformat()
 
         except Exception as e:
             action["status"] = "failed"

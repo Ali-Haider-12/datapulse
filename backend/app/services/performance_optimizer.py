@@ -8,7 +8,7 @@ Time saved: 2-4 hours per performance tuning session (manual profiling + trial-a
 """
 import logging
 from typing import Any, Dict, List, Optional, Tuple
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 
 from app.services.es_write_client import ESWriteClient, ProposedAction
@@ -63,7 +63,7 @@ class OptimizationResult:
         self.proposed_actions: List[Dict] = []
         self.summary = ""
         self.time_saved_minutes = 0
-        self.analyzed_at = datetime.utcnow().isoformat()
+        self.analyzed_at = datetime.now(timezone.utc).isoformat()
 
     def to_dict(self):
         return {

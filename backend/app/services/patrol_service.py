@@ -7,7 +7,7 @@ Pushes alerts to the frontend via the alerts store.
 
 import asyncio
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Callable
 
 from app.services.mcp_client import ElasticMCPClient
@@ -42,7 +42,7 @@ class PatrolService:
     async def run_patrol(self) -> Dict[str, Any]:
         """Execute a single patrol cycle."""
         patrol_result = {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "new_alerts": [],
             "resolved_alerts": [],
             "health_score": None,

@@ -3,7 +3,7 @@ Patrol API — Scheduled inspection sweeps.
 """
 
 from fastapi import APIRouter, Request, BackgroundTasks
-from datetime import datetime
+from datetime import datetime, timezone
 import asyncio
 import logging
 
@@ -39,7 +39,7 @@ async def start_patrol(request: Request, background_tasks: BackgroundTasks):
     return {
         "status": "started",
         "message": "Patrol sweep initiated",
-        "started_at": datetime.utcnow().isoformat(),
+        "started_at": datetime.now(timezone.utc).isoformat(),
     }
 
 
@@ -139,7 +139,7 @@ async def _run_patrol():
     patrol_record = {
         "patrol_id": f"PAT-{len(_patrol_history) + 1:04d}",
         "started_at": datetime.utcfromtimestamp(patrol_start).isoformat(),
-        "completed_at": datetime.utcnow().isoformat(),
+        "completed_at": datetime.now(timezone.utc).isoformat(),
         "duration_seconds": duration,
         "findings_count": len(findings),
         "findings": findings,

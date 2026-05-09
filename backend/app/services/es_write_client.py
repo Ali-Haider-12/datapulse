@@ -8,7 +8,7 @@ import json
 import logging
 import uuid
 from typing import Any, Dict, List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 
 logger = logging.getLogger(__name__)
@@ -49,7 +49,7 @@ class ProposedAction:
         self.error = None
         self.rollback_action = rollback_action
         self.index = index
-        self.created_at = datetime.utcnow().isoformat()
+        self.created_at = datetime.now(timezone.utc).isoformat()
         self.executed_at = None
 
     def to_dict(self):
@@ -376,7 +376,7 @@ class ESWriteClient:
                         action.result = response.json() if response.text else {"status": "ok"}
                     except Exception:
                         action.result = {"status": "ok", "http_status": response.status_code}
-                    action.executed_at = datetime.utcnow().isoformat()
+                    action.executed_at = datetime.now(timezone.utc).isoformat()
                 else:
                     action.status = ApprovalStatus.failed
                     action.error = f"ES returned {response.status_code}: {response.text[:500]}"

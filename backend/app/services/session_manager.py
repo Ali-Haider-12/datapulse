@@ -10,7 +10,7 @@ import json
 import logging
 import os
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, List, Optional
 from pathlib import Path
 
@@ -26,19 +26,19 @@ class Session:
         self.session_id = session_id
         self.metadata = metadata or {}
         self.messages: List[Dict[str, Any]] = []
-        self.created_at = datetime.utcnow()
-        self.last_active = datetime.utcnow()
+        self.created_at = datetime.now(timezone.utc)
+        self.last_active = datetime.now(timezone.utc)
         self.state: Dict[str, Any] = {}  # Arbitrary session state
 
     def add_message(self, role: str, content: str, **kwargs) -> None:
         msg = {
             "role": role,
             "content": content,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             **kwargs,
         }
         self.messages.append(msg)
-        self.last_active = datetime.utcnow()
+        self.last_active = datetime.now(timezone.utc)
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -107,7 +107,7 @@ class SessionManager:
     async def get_session(self, session_id: str) -> Optional[Session]:
         """Get a session by ID, loading from disk if needed."""
         if session_id in self.sessions:
-            self.sessions[session_id].last_active = datetime.utcnow()
+            self.sessions[session_id].last_active = datetime.now(timezone.utc)
             return self.sessions[session_id]
 
         # Try loading from disk
@@ -181,7 +181,7 @@ class SessionManager:
 
     async def delete_old_sessions(self, max_age_hours: int = 24) -> int:
         """Delete sessions older than max_age_hours. Returns count deleted."""
-        cutoff = datetime.utcnow() - timedelta(hours=max_age_hours)
+        cutoff = datetime.now(timezone.utc) - timedelta(hours=max_age_hours)
         deleted = 0
         for sid in list(self.sessions.keys()):
             if self.sessions[sid].last_active < cutoff:

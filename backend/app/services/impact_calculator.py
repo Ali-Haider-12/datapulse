@@ -6,7 +6,7 @@ per-service breakdown, and historical comparison.
 import asyncio
 import json
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, List, Optional
 
 from app.services.mcp_client import ElasticMCPClient
@@ -88,7 +88,7 @@ class ImpactCalculator:
             "per_service_impact": {},
             "trend_indicator": "stable",  # improving, stable, degrading
             "ai_confidence": 0.0,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
 
         try:
@@ -268,7 +268,7 @@ class ImpactCalculator:
 
             # Update hourly history for trend tracking
             self._hourly_history.append({
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": datetime.now(timezone.utc).isoformat(),
                 "error_rate": metrics["error_rate_percent"],
                 "revenue_at_risk": metrics["revenue_at_risk"],
                 "health_score": metrics["uptime_percent"],

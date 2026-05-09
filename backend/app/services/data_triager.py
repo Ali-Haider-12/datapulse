@@ -10,7 +10,7 @@ Time saved: 2-3 hours per reindex operation (manual planning + execution + verif
 """
 import logging
 from typing import Any, Dict, List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 
 from app.services.es_write_client import ESWriteClient, ProposedAction
@@ -39,7 +39,7 @@ class TriageResult:
         self.proposed_actions: List[Dict] = []
         self.executed_actions: List[Dict] = []
         self.summary = ""
-        self.started_at = datetime.utcnow().isoformat()
+        self.started_at = datetime.now(timezone.utc).isoformat()
         self.completed_at = None
         self.time_saved_minutes = 0
 
@@ -383,5 +383,5 @@ class DataTriager:
                 f"Estimated time saved: {combined.time_saved_minutes} minutes."
             )
 
-        combined.completed_at = datetime.utcnow().isoformat()
+        combined.completed_at = datetime.now(timezone.utc).isoformat()
         return combined

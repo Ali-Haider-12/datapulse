@@ -9,7 +9,7 @@ Time saved: 4-6 hours per capacity planning session (manual stats collection
 import logging
 import math
 from typing import Any, Dict, List, Optional, Tuple
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from enum import Enum
 
 from app.services.es_write_client import ESWriteClient, ProposedAction
@@ -68,7 +68,7 @@ class PlannerResult:
         self.proposed_actions: List[Dict] = []
         self.summary = ""
         self.time_saved_minutes = 0
-        self.analyzed_at = datetime.utcnow().isoformat()
+        self.analyzed_at = datetime.now(timezone.utc).isoformat()
 
     def to_dict(self):
         return {
@@ -416,5 +416,5 @@ class CapacityPlanner:
             f"Proposed {len(templates)} index templates for common patterns. "
             f"Estimated time saved: {result.time_saved_minutes} minutes."
         )
-        result.analyzed_at = datetime.utcnow().isoformat()
+        result.analyzed_at = datetime.now(timezone.utc).isoformat()
         return result

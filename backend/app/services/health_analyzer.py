@@ -6,7 +6,7 @@ and Gemini-powered anomaly detection.
 import asyncio
 import json
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, List, Optional
 
 from app.services.mcp_client import ElasticMCPClient
@@ -78,7 +78,7 @@ class HealthAnalyzer:
             "health_score": max(0, 100 - len(alerts) * 10),
             "alerts": alerts,
             "ai_analysis": ai_analysis,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
 
     async def _get_ai_health_analysis(
@@ -124,7 +124,7 @@ Respond in a professional, concise tone with actionable insights."""
             return {
                 "status": "available",
                 "analysis": response_text.strip() if response_text else "LLM returned empty response",
-                "generated_at": datetime.utcnow().isoformat(),
+                "generated_at": datetime.now(timezone.utc).isoformat(),
             }
 
         except Exception as e:
@@ -346,5 +346,5 @@ Respond in a professional, concise tone with actionable insights."""
             "error_trends": error_trends,
             "predictions": predictions,
             "all_alerts": all_alerts,
-            "generated_at": datetime.utcnow().isoformat(),
+            "generated_at": datetime.now(timezone.utc).isoformat(),
         }

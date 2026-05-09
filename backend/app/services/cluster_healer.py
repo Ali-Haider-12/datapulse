@@ -14,7 +14,7 @@ Time saved per incident: 45 minutes → 30 seconds
 
 import logging
 from typing import Any, Dict, List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 
 from app.services.es_write_client import ESWriteClient, ProposedAction
@@ -43,7 +43,7 @@ class HealResult:
         self.proposed_actions: List[Dict] = []
         self.executed_actions: List[Dict] = []
         self.summary = ""
-        self.started_at = datetime.utcnow().isoformat()
+        self.started_at = datetime.now(timezone.utc).isoformat()
         self.completed_at = None
         self.time_saved_minutes = 0
 
@@ -303,7 +303,7 @@ class ClusterHealer:
                 if hits:
                     last_ts = hits[0].get("_source", {}).get("@timestamp", "")
                     if last_ts:
-                        from datetime import datetime as dt
+                        from datetime import datetime, timezone as dt
 
                         try:
                             last_date = dt.fromisoformat(last_ts.replace("Z", "+00:00"))
@@ -386,5 +386,5 @@ class ClusterHealer:
                 f"({combined.time_saved_minutes // 60}h {combined.time_saved_minutes % 60}m)."
             )
 
-        combined.completed_at = datetime.utcnow().isoformat()
+        combined.completed_at = datetime.now(timezone.utc).isoformat()
         return combined

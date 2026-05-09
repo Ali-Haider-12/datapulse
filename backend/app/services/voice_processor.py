@@ -267,7 +267,7 @@ class VoiceProcessor:
                     # Extract dynamic parameters
                     params = self._extract_params(intent["action"], command_text, match)
                     if params:
-                        result["params"] = params
+                        result.update(params)
 
                     return result
 

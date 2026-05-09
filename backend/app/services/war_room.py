@@ -8,7 +8,7 @@ passing and real-time progress streaming.
 import asyncio
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from app.services.agents.base_agent import Agent
@@ -58,7 +58,7 @@ class AsyncWarRoom:
         3. Remediation (Fixer proposes actions)
         """
         self.status = "active"
-        self.start_time = datetime.utcnow()
+        self.start_time = datetime.now(timezone.utc)
         self._log("system", f"Async War Room started for incident {self.incident_id}")
 
         try:
@@ -243,7 +243,7 @@ class AsyncWarRoom:
             "incident_id": self.incident_id,
             "status": self.status,
             "start_time": self.start_time.isoformat() if self.start_time else None,
-            "end_time": datetime.utcnow().isoformat(),
+            "end_time": datetime.now(timezone.utc).isoformat(),
             "agents": {name: agent.get_state() for name, agent in self.agents.items()},
             "shared_context": self._shared_context,
             "conversation_length": len(self.conversation_log),
@@ -253,7 +253,7 @@ class AsyncWarRoom:
     def _log(self, speaker: str, message: str) -> None:
         """Add entry to conversation log."""
         entry = {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "speaker": speaker,
             "message": message,
         }
@@ -291,7 +291,7 @@ class WarRoom:
     def start(self) -> None:
         """Start the war room synchronously."""
         self.status = "active"
-        self.start_time = datetime.utcnow()
+        self.start_time = datetime.now(timezone.utc)
         self._async_room._log("system", f"War Room started for incident {self.incident_id}")
 
         detector = self._async_room.agents["detector"]
@@ -332,7 +332,7 @@ class WarRoom:
 
     def _log(self, speaker: str, message: str) -> None:
         entry = {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "speaker": speaker,
             "message": message,
         }

@@ -501,10 +501,10 @@ class TestSessionManager:
         mgr = SessionManager(storage_path=str(storage))
         await mgr.start()
         old_session = mgr.sessions["old-session"] = type('obj', (object,), {
-            'last_active': datetime.utcnow() - timedelta(hours=25),
+            'last_active': datetime.now(timezone.utc) - timedelta(hours=25),
             'to_dict': lambda self: {"session_id": "old-session", "messages": [],
-                                      "created_at": datetime.utcnow().isoformat(),
-                                      "last_active": (datetime.utcnow() - timedelta(hours=25)).isoformat(),
+                                      "created_at": datetime.now(timezone.utc).isoformat(),
+                                      "last_active": (datetime.now(timezone.utc) - timedelta(hours=25)).isoformat(),
                                       "metadata": {}, "state": {}},
             'messages': [], 'metadata': {},
         })()

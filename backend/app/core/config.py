@@ -1,4 +1,4 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from functools import lru_cache
 from pathlib import Path
 
@@ -52,10 +52,12 @@ class Settings(BaseSettings):
     HEALTH_CHECK_INTERVAL_SECONDS: int = 60
     ALERT_THRESHOLD_SCORE: int = 50
 
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        extra = "allow"
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="allow",
+        case_sensitive=True,
+    )
 
 
 @lru_cache()

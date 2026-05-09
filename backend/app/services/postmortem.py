@@ -66,8 +66,8 @@ class PostmortemGenerator:
                 "investigation_steps": [],
                 "diagnosis": {},
                 "remediation_actions": [],
-                "created_at": datetime.utcnow().isoformat(),
-                "updated_at": datetime.utcnow().isoformat(),
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "updated_at": datetime.now(timezone.utc).isoformat(),
             }
 
         # Gather timeline data from ES logs
@@ -85,8 +85,8 @@ class PostmortemGenerator:
             "title": incident_data.get("title", f"Incident {incident_id}"),
             "severity": incident_data.get("severity", "unknown"),
             "status": incident_data.get("status", "resolved"),
-            "created_at": incident_data.get("created_at", datetime.utcnow().isoformat()),
-            "resolved_at": incident_data.get("updated_at", datetime.utcnow().isoformat()),
+            "created_at": incident_data.get("created_at", datetime.now(timezone.utc).isoformat()),
+            "resolved_at": incident_data.get("updated_at", datetime.now(timezone.utc).isoformat()),
             "timeline": timeline,
             "root_cause": incident_data.get("diagnosis", {}).get("root_cause", ai_analysis.get("root_cause", "Under investigation")),
             "impact": incident_data.get("diagnosis", {}).get("impact", ai_analysis.get("impact", "Assessed automatically")),
@@ -96,7 +96,7 @@ class PostmortemGenerator:
             "remediation_actions": incident_data.get("remediation_actions", []),
             "lessons_learned": self._generate_lessons_learned(incident_data, timeline),
             "preventive_actions": self._generate_preventive_actions(incident_data),
-            "generated_at": datetime.utcnow().isoformat(),
+            "generated_at": datetime.now(timezone.utc).isoformat(),
         }
 
         # Render in requested format
@@ -120,7 +120,7 @@ class PostmortemGenerator:
 
         # Add creation event
         timeline.append({
-            "timestamp": incident_data.get("created_at", datetime.utcnow().isoformat()),
+            "timestamp": incident_data.get("created_at", datetime.now(timezone.utc).isoformat()),
             "event": "Incident detected",
             "details": incident_data.get("title", ""),
             "severity": "critical",
@@ -158,7 +158,7 @@ class PostmortemGenerator:
 
         # Add resolution event
         timeline.append({
-            "timestamp": incident_data.get("updated_at", datetime.utcnow().isoformat()),
+            "timestamp": incident_data.get("updated_at", datetime.now(timezone.utc).isoformat()),
             "event": "Incident resolved",
             "details": "Auto-resolved or remediated",
             "severity": "success",
@@ -276,8 +276,8 @@ Be concise and actionable."""
         multiplier = severity_multipliers.get(severity, 500)
 
         try:
-            created = datetime.fromisoformat(incident_data.get("created_at", datetime.utcnow().isoformat()).replace("Z", "+00:00"))
-            resolved = datetime.fromisoformat(incident_data.get("updated_at", datetime.utcnow().isoformat()).replace("Z", "+00:00"))
+            created = datetime.fromisoformat(incident_data.get("created_at", datetime.now(timezone.utc).isoformat()).replace("Z", "+00:00"))
+            resolved = datetime.fromisoformat(incident_data.get("updated_at", datetime.now(timezone.utc).isoformat()).replace("Z", "+00:00"))
             duration_hours = max((resolved - created).total_seconds() / 3600, 0.1)
         except Exception:
             duration_hours = 1.0

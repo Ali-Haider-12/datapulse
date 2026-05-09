@@ -14,7 +14,7 @@ Time saved: 4-6 hours per erasure request (manual search + delete + verify)
 """
 import logging
 from typing import Any, Dict, List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 
 from app.services.es_write_client import ESWriteClient, ProposedAction
@@ -45,7 +45,7 @@ class ErasureAuditEntry:
         self.documents_deleted: int = 0
         self.actions_taken: List[Dict] = []
         self.status = ErasureStatus.searching
-        self.requested_at = datetime.utcnow().isoformat()
+        self.requested_at = datetime.now(timezone.utc).isoformat()
         self.completed_at: Optional[str] = None
         self.verified_at: Optional[str] = None
         self.verification_result: Optional[Dict] = None
@@ -289,7 +289,7 @@ class GDPRErasureEngine:
             "verified": True,
             "residual_data": [],
             "message": "✅ All user data successfully deleted. GDPR compliance verified.",
-            "verified_at": datetime.utcnow().isoformat(),
+            "verified_at": datetime.now(timezone.utc).isoformat(),
         }
 
     def get_audit_log(self, limit: int = 50) -> List[Dict]:

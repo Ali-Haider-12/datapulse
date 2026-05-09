@@ -11,7 +11,7 @@ import random
 import argparse
 import asyncio
 from http.server import HTTPServer, BaseHTTPRequestHandler
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 
 # Demo data
 INDICES = [
@@ -77,7 +77,7 @@ SEARCH_RESULTS = {
                 "_id": f"log-{i}",
                 "_score": 1.0,
                 "_source": {
-                    "timestamp": (datetime.utcnow() - timedelta(minutes=random.randint(0, 10080))).isoformat() + "Z",
+                    "timestamp": (datetime.now(timezone.utc) - timedelta(minutes=random.randint(0, 10080))).isoformat() + "Z",
                     "level": random.choice(["info", "warn", "error"]),
                     "service": random.choice(["api-gateway", "auth-service", "payment-processor", "user-service"]),
                     "message": "Request processed" if random.random() > 0.3 else "ConnectionTimeout",

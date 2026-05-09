@@ -6,7 +6,7 @@ and sample log entries for use in tests and seed scripts.
 """
 
 import random
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 from typing import List, Dict, Any
 
 
@@ -109,7 +109,7 @@ class DemoDataGenerator:
                         "node": node,
                         "unassigned_info": {
                             "reason": "NODE_LEFT" if state == "UNASSIGNED" and random.random() > 0.5 else "ALLOCATION_FAILED",
-                            "at": (datetime.utcnow() - timedelta(minutes=random.randint(1, 60))).isoformat(),
+                            "at": (datetime.now(timezone.utc) - timedelta(minutes=random.randint(1, 60))).isoformat(),
                         } if state == "UNASSIGNED" else None,
                     })
         return shards
@@ -118,7 +118,7 @@ class DemoDataGenerator:
     def generate_sample_logs(count: int = 50) -> List[Dict[str, Any]]:
         """Generate sample log entries with realistic distributions."""
         logs = []
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
 
         for i in range(count):
             ts = now - timedelta(minutes=random.randint(0, 1440))

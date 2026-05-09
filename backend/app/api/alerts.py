@@ -22,6 +22,21 @@ def _build_sample_alerts():
     ]
 
 
+# In-memory alert store
+try:
+    import orjson as json
+except ImportError:
+    import json
+
+_alert_store: list = []
+
+
+def add_alert(alert: dict) -> dict:
+    alert["id"] = f"alert-{len(_alert_store) + 1}"
+    _alert_store.append(alert)
+    return alert
+
+
 @router.get("")
 async def get_alerts(request: Request):
     """Get all active alerts."""
